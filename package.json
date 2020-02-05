@@ -13,6 +13,7 @@
     "ng-frontend-init": "dist/init.js"
   },
   "scripts": {
+    "preversion": "npm run build && npm run lint",
     "build": "tsc -p . && chmod +x dist/init.js",
     "lint": "tslint -p ."
   },
