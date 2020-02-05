@@ -21,7 +21,8 @@
   "include": [
     "./src",
     "typings/package-json.d.ts",
-    "typings/generics.d.ts"
+    "typings/generics.d.ts",
+    "typings/rollup-plugin-uglify.d.ts"
   ],
   "exclude": [
     "node_modules"

@@ -1,10 +1,10 @@
 # Frontend Config Preset
 
-This library is a simple preset for quickly setting up a build pipeline using Rollup, Typescript, and PostCSS.
+This library is a simple preset for quickly setting up a build pipeline using [Rollup](https://rollupjs.org/guide/en/), [Typescript](http://www.typescriptlang.org/), and [PostCSS](http://www.typescriptlang.org/).
 
-> This is an opinionated preset! If you are looking for deeper customization, then you may want to consider configuring your build pipeline yourself.
+> This is an opinionated preset! If you are looking for deeper customization, then you may want to consider a different solution or custom build pipeline.
 
-- Provides loaders for JSON, CSS, SASS/SCSS, and PostCSS with autoprefixing for cross-browser support
+- Provides loaders for [JSON](https://www.npmjs.com/package/@rollup/plugin-json), [CSS, SASS/SCSS, and PostCSS](https://www.npmjs.com/package/rollup-plugin-postcss) with [autoprefixing](https://www.npmjs.com/package/autoprefixer) for cross-browser support
 - Automatically inject environment variables directly into your build
 - Minifies CSS and JS code for production
 - Handles CommonJS configuration that is required to compile React

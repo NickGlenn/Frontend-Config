@@ -3,6 +3,7 @@ import { JsxEmit } from "typescript";
 import { ExternalOption, OutputOptions, InputOptions } from "rollup";
 import { namedExports } from "./named-exports";
 import * as dotenv from "dotenv";
+import { isUndefined } from "util";
 import { omit } from "./utils";
 
 // load the rollup plugins that are provided by this config lib
@@ -12,8 +13,8 @@ import typescript, { RollupTypescriptOptions } from "@rollup/plugin-typescript";
 import resolve, { Options as RollupResolveOptions } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
 import postcss, { PostCssPluginOptions } from "rollup-plugin-postcss";
-import { isUndefined } from "util";
 import * as autoprefixer from "autoprefixer";
+import uglify from "rollup-plugin-uglify";
 
 export type CreateRollupConfig = {
   /** Input options for the build pipeline. */
@@ -212,6 +213,7 @@ export function createRollupConfig({
             : replaceMap
         ),
       }),
+      (minify ? uglify() : null),
     ],
   };
 }

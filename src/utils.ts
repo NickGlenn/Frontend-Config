@@ -14,10 +14,3 @@ export function omit<T extends object, K extends string>(obj: T, keys: K[]): Fil
 
   return ret as FilteredMap<T, K>;
 }
-
-/**
- * Returns true if the given value is undefined.
- */
-export function isUndefined(value: unknown): value is undefined {
-  return typeof value === "undefined";
-}
