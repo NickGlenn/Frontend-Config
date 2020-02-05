@@ -1,0 +1,5 @@
+src/
+typings/
+example/
+tsconfig.json
+tslint.json
