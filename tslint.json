@@ -30,7 +30,6 @@
     "no-any": true,
     "no-construct": true,
     "no-duplicate-super": true,
-    "no-default-export": true,
     "no-empty-interface": true,
     "no-eval": true,
     "no-object-literal-type-assertion": true,
