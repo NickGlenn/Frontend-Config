@@ -174,7 +174,7 @@ const run = promisify(exec);
   // create .gitignore for the user
   if (!existsSync(dir(".gitignore"))) {
     await checkpoint("Creating .gitignore file with sensible defaults", async () => {
-      writeFileSync(dir(".gitignore"), `node_modules/\n*.log`, "utf-8");
+      writeFileSync(dir(".gitignore"), "node_modules/\n*.log", "utf-8");
     });
   }
 
