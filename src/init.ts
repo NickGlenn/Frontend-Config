@@ -97,7 +97,6 @@ const run = promisify(exec);
       type: "confirm",
       name: "createRollupConfig",
       default: !rollupExists,
-      when: rollupExists,
       message: (
         rollupExists
           ? "A rollup.config.js file already exists, should I overwrite it?"
