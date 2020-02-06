@@ -1,5 +1,4 @@
 import { CreateRollupConfig } from "../rollup";
-import { config } from "dotenv";
 import { pick, isUndefined } from "../utils";
 import { Plugin } from "rollup";
 
@@ -10,7 +9,6 @@ const replace = require("@rollup/plugin-replace");
  * of values that will replaced or injected into the build.
  */
 export function setupVarInjection({
-  dotenv,
   exposeEnv = ["NODE_ENV"],
   injectVersion,
   packageJson,
@@ -21,11 +19,6 @@ export function setupVarInjection({
   replaceSafe = {},
   inject: injectMap = {},
 }: CreateRollupConfig) {
-
-  // use dotenv file when not explicitly disabled
-  if (dotenv !== false) {
-    config(dotenv === true ? undefined : dotenv);
-  }
 
   // values that will be replaced in the build
   let replaceMap: StringMap = {};

@@ -1,4 +1,5 @@
 import { join } from "path";
+import { config } from "dotenv";
 import { ExternalOption, OutputOptions, InputOption, InputOptions } from "rollup";
 import { RollupReplaceOptions } from "@rollup/plugin-replace";
 import { RollupTypescriptOptions } from "@rollup/plugin-typescript";
@@ -77,6 +78,11 @@ export type CreateRollupConfig = {
 export function createRollupConfig(options: CreateRollupConfig): object {
 
   const { danger = {}, experimental = {} } = options;
+
+  // use dotenv file when not explicitly disabled
+  if (options.dotenv !== false) {
+    config(options.dotenv === true ? undefined : options.dotenv);
+  }
 
   // if rootDir isn't provided, set it manually
   if (isUndefined(options.rootDir)) {
