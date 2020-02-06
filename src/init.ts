@@ -333,7 +333,7 @@ module.exports = config({
   }
 
   // create tslint.json
-  if (answers.setupLint {
+  if (answers.setupLint) {
 
     if (answers.scripts) {
       packageJson.scripts.lint = "tslint -p .";
