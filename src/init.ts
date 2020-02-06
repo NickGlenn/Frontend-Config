@@ -20,7 +20,7 @@ function dir(path: string) {
  * Logs something to console, then provides a function for checking it off.
  */
 function checkpoint(message: string, fn: { (): Promise<void> }) {
-  process.stdout.write(message + "...");
+  process.stdout.write("\n" + message + "...");
   return fn()
     .then(() => {
       process.stdout.write("\x1b[42m\x1b[30mCOMPLETE!\x1b[0m\n");
