@@ -123,7 +123,7 @@ Automatically injects a `BUILD_VERSION` variable into your build using the `vers
 
 `string[]`
 
-Specify environment variables (by key) that you want injected into your build.
+Specify environment variables (by key) that you want injected into your build. _Defaults to `["NODE_ENV"]`._
 
 #### Example
 

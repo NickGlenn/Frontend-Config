@@ -18,7 +18,7 @@ export function isObject(value: unknown): value is object {
  * Filters an object by keys.
  */
 export function omit<T extends object, K extends string>(obj: T, keys: K[]): FilteredMap<T, K> {
-  let ret: { [key: string]: unknown } = {};
+  let ret: any = {};
 
   Object.keys(obj)
     .filter((key: K) => !keys.includes(key))
@@ -27,4 +27,17 @@ export function omit<T extends object, K extends string>(obj: T, keys: K[]): Fil
     });
 
   return ret as FilteredMap<T, K>;
+}
+
+/**
+ * Picks certain values from an object using an array of keys.
+ */
+export function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K> {
+  let ret: Partial<Pick<T, K>> = {};
+
+  for (let k of keys) {
+    ret[k] = obj[k];
+  }
+
+  return ret as Pick<T, K>;
 }

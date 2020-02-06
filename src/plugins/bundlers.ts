@@ -1,8 +1,15 @@
 import { CreateRollupConfig } from "../rollup";
-import commonjs from "@rollup/plugin-commonjs";
-import resolve from "@rollup/plugin-node-resolve";
+import { join } from "path";
 
-export const ESM_NOT_SUPPORTED = ["react", "react-dom"];
+const commonjs = require("@rollup/plugin-commonjs");
+const resolve = require("@rollup/plugin-node-resolve");
+
+export const ESM_NOT_SUPPORTED = [
+  "react-dom",
+  "react-is",
+  "react",
+  "prop-types",
+];
 
 /**
  * Configures the commonjs and node-resolve plugins for Rollup.
@@ -15,26 +22,29 @@ export function configureBundlers({
   namedExports = {},
   allowAutoConfig,
   packageJson,
+  isProduction,
 }: CreateRollupConfig) {
 
   let discoveredExports: TMap<string[]> = {};
-  if (allowAutoConfig) {
+  if (allowAutoConfig !== false) {
     for (let packageName of ESM_NOT_SUPPORTED) {
       if (packageJson?.dependencies?.[packageName] || packageJson?.devDependencies?.[packageName]) {
-        const pkg = require(packageName);
-        discoveredExports[packageName] = Object.keys(pkg);
+        const path = join(rootDir!, "node_modules", packageName);
+        const exported = Object.keys(require(path));
+        discoveredExports[packageName] = exported;
       }
     }
   }
 
   return {
-    resolve: resolve({
+    resolve: (resolve as any)({
       rootDir,
       mainFields,
       dedupe,
       preferBuiltins,
     }),
-    commonjs: commonjs({
+    commonjs: (commonjs as any)({
+      sourceMap: !isProduction,
       namedExports: {
         ...discoveredExports,
         ...namedExports,

@@ -1,17 +1,19 @@
 import { join } from "path";
 import { ExternalOption, OutputOptions, InputOption, InputOptions } from "rollup";
 import { RollupReplaceOptions } from "@rollup/plugin-replace";
-import typescript, { RollupTypescriptOptions } from "@rollup/plugin-typescript";
+import { RollupTypescriptOptions } from "@rollup/plugin-typescript";
 import { Options as RollupResolveOptions } from "@rollup/plugin-node-resolve";
-import json from "@rollup/plugin-json";
-import * as autoprefixer from "autoprefixer";
-import uglify from "rollup-plugin-uglify";
 import { setupPostCSS } from "./plugins/postcss";
 import { setupVarInjection } from "./plugins/env";
 import { PostCssPluginOptions } from "rollup-plugin-postcss";
 import { isUndefined } from "./utils";
 import { configureBundlers } from "./plugins/bundlers";
 import { DotenvConfigOptions } from "dotenv/types";
+import { Options as AutoprefixerOptions } from "autoprefixer";
+
+const typescript = require("@rollup/plugin-typescript");
+const json = require("@rollup/plugin-json");
+const uglify = require("rollup-plugin-uglify");
 
 export type CreateRollupConfig = {
   /** Input options for the build pipeline. */
@@ -54,7 +56,7 @@ export type CreateRollupConfig = {
   /** Customize how CSS is compiled for your build pipeline. */
   styles?: boolean | (PostCssPluginOptions & {
     /** Customize how autoprefixing will be handled for your build pipeline. */
-    autoprefix?: boolean | autoprefixer.Options;
+    autoprefix?: boolean | AutoprefixerOptions;
   });
   /** Force certain packages to be included in the build (used only when library is set to `true`). */
   forceInclude?: string[];
@@ -121,6 +123,7 @@ export function createRollupConfig(options: CreateRollupConfig): object {
   // rename `file` to tsconfig
   let tsconfig: RollupTypescriptOptions = ts;
   tsconfig.tsconfig = ts.jsonPath;
+  delete ts.jsonPath;
 
   return {
     input: options.input,
@@ -137,12 +140,12 @@ export function createRollupConfig(options: CreateRollupConfig): object {
     plugins: [
       styles,
       inject,
-      json(),
-      typescript(tsconfig),
+      (json as any)(),
+      (typescript as any)(tsconfig),
       replace,
       commonjs,
       resolve,
-      (options.minify ? uglify() : null),
+      (options.minify ? (uglify as any)() : null),
     ],
   };
 }

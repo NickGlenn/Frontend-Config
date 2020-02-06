@@ -3,6 +3,7 @@ import { Plugin } from "rollup";
 import * as autoprefixer from "autoprefixer";
 import { isUndefined } from "../utils";
 import { PostCssPluginOptions } from "rollup-plugin-postcss";
+
 const postcss = require("rollup-plugin-postcss");
 
 /**
@@ -36,5 +37,5 @@ export function setupPostCSS({ styles, minify }: CreateRollupConfig): null | Plu
   Object.assign(config, styles);
 
   // return configured plugin
-  return postcss(config);
+  return (postcss as any)(config);
 }

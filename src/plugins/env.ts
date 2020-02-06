@@ -1,8 +1,9 @@
 import { CreateRollupConfig } from "../rollup";
 import { config } from "dotenv";
-import { omit } from "../utils";
-import replace from "@rollup/plugin-replace";
+import { pick, isUndefined } from "../utils";
 import { Plugin } from "rollup";
+
+const replace = require("@rollup/plugin-replace");
 
 /**
  * Sets up the environment variables for the build pipeline and augments the maps
@@ -10,7 +11,7 @@ import { Plugin } from "rollup";
  */
 export function setupVarInjection({
   dotenv,
-  exposeEnv = [],
+  exposeEnv = ["NODE_ENV"],
   injectVersion,
   packageJson,
   tsconfig = {},
@@ -26,16 +27,25 @@ export function setupVarInjection({
     config(dotenv === true ? undefined : dotenv);
   }
 
-  // values that will get injected into the build
-  injectMap.process = { env: omit(process.env, exposeEnv) };
-
   // values that will be replaced in the build
   let replaceMap: StringMap = {};
 
+  // set the NODE_ENV to default by default
+  if (isUndefined(process.env.NODE_ENV)) {
+    process.env.NODE_ENV = "development";
+  }
+
   // add environment variables to our string replacement and create an injection value
   for (let varname of exposeEnv) {
-    replaceMap[`process.env.${varname}`] = JSON.stringify(process.env[varname] || "");
+    if (process.env[varname]) {
+      replaceMap[`process.env.${varname}`] = JSON.stringify(process.env[varname]);
+    } else {
+      throw new Error(`Unable to find environmental variable "${varname}".`);
+    }
   }
+
+  // inject the `process.env` object for environment variables
+  injectMap.process = { env: pick(process.env, exposeEnv) };
 
   // "inject" the package.json version when enabled
   if (injectVersion) {
