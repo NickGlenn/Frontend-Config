@@ -79,6 +79,40 @@ Determines whether or not this is a "production" build. By default, this will be
 
 Allows the configuration script to inspect your `package.json` and make some configuration decisions on your behalf. For example, if `react` and/or `react-dom` are installed it will automatically set the `namedExports` values required to build these libraries. _Defaults to `true`._
 
+### missingExports
+
+`string[]`
+
+Packages that don't support ESM compatible exports can cause issues for [Rollup's CommonJS plugin](https://www.npmjs.com/package/@rollup/plugin-commonjs). This can be solved manually using [`namedExports`](#namedExports). However, this can be tedious to set up as it involves starting the build, identifying the missing export that crashed the build, add the named export to the list, and then repeating this project until your build succeeds. With this option, you can simplify specify a package name and the configuration tool will attempt to handle the rest.
+
+#### Example
+
+Let's say you get an error like the following:
+
+```
+bundles ./src/index.tsx → dist/app.js...
+[!] Error: 'exactProp' is not exported by node_modules/@material-ui/utils/index.js
+https://rollupjs.org/guide/en/#error-name-is-not-exported-by-module
+node_modules/@material-ui/styles/esm/StylesProvider/StylesProvider.js (5:9)
+3: import React from 'react';
+4: import PropTypes from 'prop-types';
+5: import { exactProp } from '@material-ui/utils';
+            ^
+6: import createGenerateClassName from '../createGenerateClassName';
+7: import { create } from 'jss';
+Error: 'exactProp' is not exported by node_modules/@material-ui/utils/index.js
+```
+
+You can resolve this quickly by passing the following option:
+
+```ts
+missingExports: ["@material-ui/utils"],
+```
+
+### namedExports
+
+See https://www.npmjs.com/package/@rollup/plugin-commonjs#namedexports
+
 ### isLibrary
 
 `boolean`

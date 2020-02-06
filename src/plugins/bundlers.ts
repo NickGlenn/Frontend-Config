@@ -23,16 +23,19 @@ export function configureBundlers({
   allowAutoConfig,
   packageJson,
   isProduction,
+  missingExports = [],
 }: CreateRollupConfig) {
 
-  let discoveredExports: TMap<string[]> = {};
   if (allowAutoConfig !== false) {
-    for (let packageName of ESM_NOT_SUPPORTED) {
-      if (packageJson?.dependencies?.[packageName] || packageJson?.devDependencies?.[packageName]) {
-        const path = join(rootDir!, "node_modules", packageName);
-        const exported = Object.keys(require(path));
-        discoveredExports[packageName] = exported;
-      }
+    missingExports = ESM_NOT_SUPPORTED.concat(missingExports);
+  }
+
+  let discoveredExports: TMap<string[]> = {};
+  for (let packageName of missingExports) {
+    if (packageJson?.dependencies?.[packageName] || packageJson?.devDependencies?.[packageName]) {
+      const path = join(rootDir!, "node_modules", packageName);
+      const exported = Object.keys(require(path));
+      discoveredExports[packageName] = exported;
     }
   }
 

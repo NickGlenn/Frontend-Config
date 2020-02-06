@@ -53,6 +53,8 @@ export type CreateRollupConfig = {
   };
   /** Determines whether or not the output bundles should be minified. Defaults to `true` when `NODE_ENV` is set to `production`. */
   minify?: boolean;
+  /** Automatically handles namedExports for non-ESM compatible modules. */
+  missingExports?: string[];
   /** Manually provide named exports for modules that can't resolve them automatically. */
   namedExports?: TMap<string[]>;
   /** Customize how CSS is compiled for your build pipeline. */
