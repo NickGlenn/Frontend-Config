@@ -1,5 +1,6 @@
 import { CreateRollupConfig } from "../rollup";
 import { join } from "path";
+import { pick } from "../utils";
 
 const commonjs = require("@rollup/plugin-commonjs");
 const resolve = require("@rollup/plugin-node-resolve");
@@ -16,9 +17,9 @@ export const ESM_NOT_SUPPORTED = [
  */
 export function configureBundlers({
   rootDir,
-  mainFields,
-  dedupe,
-  preferBuiltins,
+  mainFields = ["browser", "jsnext", "module", "main"],
+  dedupe = [],
+  preferBuiltins = true,
   namedExports = {},
   allowAutoConfig,
   packageJson,
