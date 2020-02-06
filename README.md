@@ -83,7 +83,7 @@ Allows the configuration script to inspect your `package.json` and make some con
 
 `string[]`
 
-Packages that don't support ESM compatible exports can cause issues for [Rollup's CommonJS plugin](https://www.npmjs.com/package/@rollup/plugin-commonjs). This can be solved manually using [`namedExports`](#namedExports). However, this can be tedious to set up as it involves starting the build, identifying the missing export that crashed the build, add the named export to the list, and then repeating this project until your build succeeds. With this option, you can simplify specify a package name and the configuration tool will attempt to handle the rest.
+Packages that don't support ESM compatible exports can cause issues for [Rollup's CommonJS plugin](https://www.npmjs.com/package/@rollup/plugin-commonjs). This can be solved manually using [`namedExports`](#namedExports). However, this can be tedious to set up as it involves starting the build, identifying the missing export that crashed the build, add the named export to the list, and then repeating this project until your build succeeds. With this option, you can simply specify a package name and the configuration tool will attempt to handle the rest.
 
 #### Example
 
