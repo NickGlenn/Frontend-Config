@@ -32,10 +32,12 @@ export function configureBundlers({
 
   let discoveredExports: TMap<string[]> = {};
   for (let packageName of missingExports) {
-    if (packageJson?.dependencies?.[packageName] || packageJson?.devDependencies?.[packageName]) {
+    try {
       const path = join(rootDir!, "node_modules", packageName);
       const exported = Object.keys(require(path));
       discoveredExports[packageName] = exported;
+    } catch (err) {
+      console.warn(`Failed to find package "${packageName}" to load missing exports. Make sure this module is installed.`);
     }
   }
 
