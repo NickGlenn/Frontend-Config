@@ -7,3 +7,9 @@ type TMap<T> = {
 };
 
 type Primitive = null | boolean | number | string;
+
+type PrimitiveList = (Primitive | PrimitiveMap | PrimitiveList)[];
+
+type PrimitiveMap = {
+  [key: string]: Primitive | PrimitiveList | PrimitiveMap;
+};

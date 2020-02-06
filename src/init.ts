@@ -190,8 +190,7 @@ export default config({
     name: "${answers.projectName}",
     format: "${answers.projectType === "library" ? "cjs" : "iife"}",
   },
-  library: ${answers.projectType === "library" ? "true" : "false"},
-  framework: ${JSON.stringify(framework)},
+  isLibrary: ${answers.projectType === "library" ? "true" : "false"},
 });
   `
         , "utf-8");
@@ -224,7 +223,7 @@ export default config({
           ],
         },
         include: [
-          `./${answers.srcFolder}`,
+          `./${answers.srcFolder}/**/*.ts`,
         ],
         exclude: [
           "node_modules",

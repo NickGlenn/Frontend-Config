@@ -1,219 +1,148 @@
-import * as path from "path";
-import { JsxEmit } from "typescript";
-import { ExternalOption, OutputOptions, InputOptions } from "rollup";
-import { namedExports } from "./named-exports";
-import * as dotenv from "dotenv";
-import { isUndefined } from "util";
-import { omit } from "./utils";
-
-// load the rollup plugins that are provided by this config lib
-import replace, { RollupReplaceOptions } from "@rollup/plugin-replace";
-import commonjs from "@rollup/plugin-commonjs";
+import { join } from "path";
+import { ExternalOption, OutputOptions, InputOption, InputOptions } from "rollup";
+import { RollupReplaceOptions } from "@rollup/plugin-replace";
 import typescript, { RollupTypescriptOptions } from "@rollup/plugin-typescript";
-import resolve, { Options as RollupResolveOptions } from "@rollup/plugin-node-resolve";
+import { Options as RollupResolveOptions } from "@rollup/plugin-node-resolve";
 import json from "@rollup/plugin-json";
-import postcss, { PostCssPluginOptions } from "rollup-plugin-postcss";
 import * as autoprefixer from "autoprefixer";
 import uglify from "rollup-plugin-uglify";
+import { setupPostCSS } from "./plugins/postcss";
+import { setupVarInjection } from "./plugins/env";
+import { PostCssPluginOptions } from "rollup-plugin-postcss";
+import { isUndefined } from "./utils";
+import { configureBundlers } from "./plugins/bundlers";
+import { DotenvConfigOptions } from "dotenv/types";
 
 export type CreateRollupConfig = {
   /** Input options for the build pipeline. */
-  input: InputOptions;
+  input: InputOption;
   /** Output options for the build pipeline. */
   output: OutputOptions;
+  /** Determines whether or not this is a production build. */
+  isProduction?: boolean | { (): boolean };
+  /** When true, your package.json will be inspected and some configurations will be made for you. _Defaults to `true`._ */
+  allowAutoConfig?: boolean;
   /** When true, the dotenv will be initialized for the build. */
-  dotenv?: boolean | dotenv.DotenvConfigOptions;
+  dotenv?: boolean | DotenvConfigOptions;
   /** Root directory to resolve from. Used when resolving entrypoint imports, and when resolving deduplicated modules. */
   rootDir?: string;
   /** Manualy provide the contents of package.json */
   packageJson?: PackageJSON;
   /** Alters configuration to better support libraries that can be easily published to NPM or another package registry. */
-  library?: boolean;
-  /** Specify a preset configuration to use based on framework. */
-  framework?: "react" | "preact";
+  isLibrary?: boolean;
   /** Specify external packages that should not be included in this build. */
   external?: ExternalOption;
-  /** Force certain packages to be included in the build (used only when library is set to `true`). */
-  forceInclude?: string[];
+  /** Inject variables as application "globals" found in the top of your build. */
+  inject?: TMap<unknown>;
   /** Specify environment variables that will be injected into your build. */
-  injectEnv?: string[];
+  exposeEnv?: string[];
   /** Replace string values with JS friendly versions of their values. */
   replaceSafe?: TMap<Primitive | Primitive[]>;
   /** Replace string values with raw values. */
   replaceRaw?: RollupReplaceOptions;
   /** When true, the version in your package.json will be injected as global named `BUILD_VERSION`. */
-  injectPackageVersion?: boolean;
-  /** Global properties that will be made available to the bundle outside of the compilation + bundling process. */
-  globals: StringMap;
+  injectVersion?: boolean;
   /** Configuration options for Typescript. */
-  tsconfig?: RollupTypescriptOptions;
-  /** Configure a sourcemap for the build. Defaults to `true` unless `NODE_ENV` is set to `production`.*/
-  sourcemap?: boolean | "hidden" | "inline";
+  tsconfig?: Omit<RollupTypescriptOptions, "tsconfig"> & {
+    /** Filepath to the tsconfig.json file. */
+    jsonPath?: RollupTypescriptOptions["tsconfig"];
+  };
   /** Determines whether or not the output bundles should be minified. Defaults to `true` when `NODE_ENV` is set to `production`. */
   minify?: boolean;
   /** Manually provide named exports for modules that can't resolve them automatically. */
   namedExports?: TMap<string[]>;
   /** Customize how CSS is compiled for your build pipeline. */
-  styles?: Omit<PostCssPluginOptions, "minify"> & {
+  styles?: boolean | (PostCssPluginOptions & {
     /** Customize how autoprefixing will be handled for your build pipeline. */
     autoprefix?: boolean | autoprefixer.Options;
-  };
+  });
+  /** Force certain packages to be included in the build (used only when library is set to `true`). */
+  forceInclude?: string[];
+  /** Exposes dangerous configuration settings for Rollup. */
+  danger?: Pick<InputOptions, "acorn" | "acornInjectPlugins" | "context" | "moduleContext" | "preserveSymlinks" | "shimMissingExports" | "treeshake">;
+  /** Exposes experimental configuration settings for Rollup. */
+  experimental?: Pick<InputOptions, "chunkGroupingSize" | "experimentalCacheExpiry" | "experimentalOptimizeChunks" | "perf">;
 }
+  & Pick<InputOptions, "cache" | "inlineDynamicImports" | "manualChunks" | "onwarn" | "preserveModules" | "strictDeprecations">
   & Pick<RollupResolveOptions, "mainFields" | "dedupe" | "preferBuiltins">;
 
 /**
  * Generates a configuration used by Rollup for compiling and bundling front-end applications.
  */
-export function createRollupConfig({
-  dotenv: useDotenv,
-  input,
-  output,
-  rootDir = process.cwd(),
-  framework,
-  library,
-  packageJson,
-  external = [],
-  forceInclude = [],
-  injectEnv: env = [],
-  replaceRaw = {},
-  replaceSafe = {},
-  injectPackageVersion,
-  mainFields,
-  dedupe,
-  preferBuiltins,
-  globals,
-  sourcemap,
-  tsconfig = {},
-  namedExports: customNamedExports = {},
-  minify,
-  styles = {},
-}: CreateRollupConfig): object {
+export function createRollupConfig(options: CreateRollupConfig): object {
 
-  // enable dotenv when active
-  if (useDotenv) {
-    dotenv.config(useDotenv === true ? undefined : useDotenv);
+  const { danger = {}, experimental = {} } = options;
+
+  // if rootDir isn't provided, set it manually
+  if (isUndefined(options.rootDir)) {
+    options.rootDir = process.cwd();
   }
-
-  // create a map of values that this plugin will replace
-  let replaceMap: TMap<string> = {};
-
-  // create a map of values that will get injected at the top of our JS
-  let injectedValues: TMap<unknown> = {
-    process: { env: omit(process.env, env) },
-  };
 
   // if package.json contents weren't explicitly provided, attempt to find them
-  if (!packageJson) {
-    packageJson = require(path.resolve(process.cwd() + "/package.json"));
-  }
-
-  // add environment variables to our string replacement and create an injection value
-  for (let varname of env) {
-    replaceSafe[`process.env.${varname}`] = process.env[varname] || "";
-  }
-
-  // "inject" the package.json version when enabled
-  if (injectPackageVersion) {
-    injectedValues.BUILD_VERSION = packageJson?.version;
-  }
-
-  // replace string values with the JS friendly versions
-  for (let replaceString in replaceSafe) {
-    replaceMap[replaceString] = JSON.stringify(replaceSafe[replaceString]);
-  }
-
-  // generate the intro string using the injected values
-  let intro = "";
-  for (let k in injectedValues) {
-    if (/^[a-zA-Z\$\_][\w\$\_]+$/.test(k)) {
-      intro += `var ${k} = ${JSON.stringify(injectedValues[k])};\n`;
-    } else {
-      throw new Error(`Unable to inject value "${k}" as it's an invalid JS variable name.`);
-    }
-  }
-
-  // apply framework preset configurations (if any)
-  switch (framework) {
-    case "react":
-      tsconfig.jsx = JsxEmit.React;
-      break;
-    case "preact":
-      tsconfig.jsx = JsxEmit.React;
-      tsconfig.jsxFactory = "h";
-      break;
+  var pkg = require(join(options.rootDir, "/package.json"));
+  if (!options.packageJson) {
+    options.packageJson = pkg;
+  } else {
+    Object.assign(pkg, options.packageJson);
   }
 
   // if we're in production, let's try to set some defaults for certain settings
-  if (isUndefined(sourcemap)) {
-    sourcemap = process.env.NODE_ENV !== "production";
+  let isProduction = process.env.NODE_ENV === "production";
+  if (typeof options.isProduction === "function") {
+    isProduction = options.isProduction();
+  }
+  else if (typeof options.isProduction === "boolean") {
+    isProduction = options.isProduction;
   }
 
-  if (isUndefined(minify)) {
-    minify = process.env.NODE_ENV === "production";
+  if (isUndefined(options.output.sourcemap)) {
+    options.output.sourcemap = !isProduction;
   }
 
-  // modify configurations to support libraries that will be published to a package registry
-  if (library) {
-    // since this is a library, we'll want to include typings in the output
-    tsconfig.declaration = true;
-
-    // build the external list using the installed packages
-    if (packageJson && Array.isArray(packageJson.dependencies)) {
-      const _external = external;
-      external = (source, importer, resolved) => {
-        return (
-          (packageJson!.dependencies!.hasOwnProperty(source)) ||
-          (Array.isArray(_external) && _external.includes(source)) ||
-          (typeof _external === "function" && _external(source, importer, resolved))
-        );
-      };
-    }
+  if (isUndefined(options.minify)) {
+    options.minify = isProduction;
   }
 
-  // split out the postcss configurations and autoprefixer configurations
-  let { autoprefix, ...stylesConfig } = styles;
-  if (!Array.isArray(stylesConfig.plugins) && autoprefix !== false) {
-    stylesConfig.plugins = [autoprefixer(typeof autoprefix !== "boolean" ? autoprefix : undefined)];
+  // set up our environment variables, injection values and replacements
+  const { inject, replace, external } = setupVarInjection(options);
+
+  // set up the commonjs and node-resolve plugins used for importing modules
+  const { commonjs, resolve } = configureBundlers(options);
+
+  // set up styles using the PostCSS plugin
+  const styles = setupPostCSS(options);
+
+  // get the tsconfig options for this build
+  let ts = options.tsconfig || {};
+  if (isUndefined(ts?.jsonPath)) {
+    ts.jsonPath = join(options.rootDir, "tsconfig.json");
   }
+
+  // rename `file` to tsconfig
+  let tsconfig: RollupTypescriptOptions = ts;
+  tsconfig.tsconfig = ts.jsonPath;
 
   return {
-    input,
-    output: {
-      globals,
-      intro,
-      sourcemap,
-      ...output,
-    },
+    input: options.input,
+    output: options.output,
     external,
+    cache: options.cache,
+    inlineDynamicImports: options.inlineDynamicImports,
+    manualChunks: options.manualChunks,
+    onwarn: options.onwarn,
+    preserveModules: options.preserveModules,
+    strictDeprecations: options.strictDeprecations,
+    ...danger,
+    ...experimental,
     plugins: [
-      postcss({
-        extract: true,
-        minimize: minify,
-        ...stylesConfig,
-      }),
+      styles,
+      inject,
       json(),
       typescript(tsconfig),
-      resolve({
-        rootDir,
-        mainFields,
-        dedupe,
-        preferBuiltins,
-      }),
-      commonjs({
-        namedExports: {
-          ...namedExports,
-          ...customNamedExports,
-        },
-      }),
-      replace({
-        ...replaceRaw,
-        values: (
-          replaceRaw.values
-            ? { ...replaceRaw.values, ...replaceMap }
-            : replaceMap
-        ),
-      }),
-      (minify ? uglify() : null),
+      replace,
+      commonjs,
+      resolve,
+      (options.minify ? uglify() : null),
     ],
   };
 }
