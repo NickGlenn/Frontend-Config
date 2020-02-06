@@ -125,7 +125,7 @@ const run = promisify(exec);
     },
     {
       type: "confirm",
-      name: "createTslintRules",
+      name: "setupLint",
       default: !tslintExists,
       message: (
         tslintExists
@@ -258,7 +258,10 @@ tmp/
 temp/
 
 # Build folder
-./${answers.distFolder}/${answers.projectType}*[.js, .css, .map, .d.ts]
+${answers.distFolder}/${answers.projectType}*.js
+${answers.distFolder}/${answers.projectType}*.css
+${answers.distFolder}/${answers.projectType}*.d.ts
+${answers.distFolder}/${answers.projectType}*.map
 `, "utf-8");
     });
   }
@@ -330,7 +333,7 @@ module.exports = config({
   }
 
   // create tslint.json
-  if (answers.createTslintRules) {
+  if (answers.setupLint {
 
     if (answers.scripts) {
       packageJson.scripts.lint = "tslint -p .";
