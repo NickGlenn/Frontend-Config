@@ -7,5 +7,5 @@ type RollupStripPlugin = {
   debugger?: boolean;
   functions?: string[];
   labels?: string[];
-  sourceMap?: string[];
+  sourceMap?: boolean;
 };

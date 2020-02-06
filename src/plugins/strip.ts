@@ -11,7 +11,11 @@ export function setupStrip({ strip, isProduction }: CreateRollupConfig): null | 
     return null;
   }
 
-  let config: RollupStripPlugin = {};
+  let config: RollupStripPlugin = {
+    debugger: true,
+    functions: ['console.*', 'assert.*'],
+    sourceMap: !isProduction,
+  };
 
   if (isObject(strip)) {
     Object.assign(config, strip);

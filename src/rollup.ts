@@ -1,5 +1,5 @@
 import { join } from "path";
-import { ExternalOption, OutputOptions, InputOption, InputOptions, Plugin } from "rollup";
+import { ExternalOption, OutputOptions, InputOption, InputOptions } from "rollup";
 import { RollupReplaceOptions } from "@rollup/plugin-replace";
 import { RollupTypescriptOptions } from "@rollup/plugin-typescript";
 import { Options as RollupResolveOptions } from "@rollup/plugin-node-resolve";
@@ -11,10 +11,10 @@ import { configureBundlers } from "./plugins/bundlers";
 import { DotenvConfigOptions } from "dotenv/types";
 import { Options as AutoprefixerOptions } from "autoprefixer";
 import { setupStrip } from "./plugins/strip";
+import { uglify } from "rollup-plugin-uglify";
 
 const typescript = require("@rollup/plugin-typescript");
 const json = require("@rollup/plugin-json");
-const uglify = require("rollup-plugin-uglify");
 
 export type CreateRollupConfig = {
   /** Input options for the build pipeline. */
@@ -99,6 +99,7 @@ export function createRollupConfig(options: CreateRollupConfig): object {
   else if (typeof options.isProduction === "boolean") {
     isProduction = options.isProduction;
   }
+  options.isProduction = isProduction;
 
   if (isUndefined(options.output.sourcemap)) {
     options.output.sourcemap = !isProduction;
@@ -152,7 +153,7 @@ export function createRollupConfig(options: CreateRollupConfig): object {
       commonjs,
       resolve,
       strip,
-      (options.minify ? uglify() : null),
+      (options.minify === true ? uglify() : null),
     ],
   };
 }
