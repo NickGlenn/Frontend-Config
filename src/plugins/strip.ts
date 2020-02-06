@@ -13,7 +13,7 @@ export function setupStrip({ strip, isProduction }: CreateRollupConfig): null | 
 
   let config: RollupStripPlugin = {
     debugger: true,
-    functions: ['console.*', 'assert.*'],
+    functions: ["console.*", "assert.*"],
     sourceMap: !isProduction,
   };
 

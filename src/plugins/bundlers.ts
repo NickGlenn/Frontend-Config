@@ -50,5 +50,5 @@ export function configureBundlers({
         ...namedExports,
       },
     }),
-  }
+  };
 }
