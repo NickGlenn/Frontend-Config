@@ -1,5 +1,5 @@
 import { join } from "path";
-import { ExternalOption, OutputOptions, InputOption, InputOptions } from "rollup";
+import { ExternalOption, OutputOptions, InputOption, InputOptions, Plugin } from "rollup";
 import { RollupReplaceOptions } from "@rollup/plugin-replace";
 import { RollupTypescriptOptions } from "@rollup/plugin-typescript";
 import { Options as RollupResolveOptions } from "@rollup/plugin-node-resolve";
@@ -10,6 +10,7 @@ import { isUndefined } from "./utils";
 import { configureBundlers } from "./plugins/bundlers";
 import { DotenvConfigOptions } from "dotenv/types";
 import { Options as AutoprefixerOptions } from "autoprefixer";
+import { setupStrip } from "./plugins/strip";
 
 const typescript = require("@rollup/plugin-typescript");
 const json = require("@rollup/plugin-json");
@@ -60,6 +61,8 @@ export type CreateRollupConfig = {
   });
   /** Force certain packages to be included in the build (used only when library is set to `true`). */
   forceInclude?: string[];
+  /** Configures the Rollup "strip" plugin. _Defaults to stripping debug values when `NODE_ENV` is set to `production`._ */
+  strip?: boolean | RollupStripPlugin;
   /** Exposes dangerous configuration settings for Rollup. */
   danger?: Pick<InputOptions, "acorn" | "acornInjectPlugins" | "context" | "moduleContext" | "preserveSymlinks" | "shimMissingExports" | "treeshake">;
   /** Exposes experimental configuration settings for Rollup. */
@@ -114,6 +117,9 @@ export function createRollupConfig(options: CreateRollupConfig): object {
   // set up styles using the PostCSS plugin
   const styles = setupPostCSS(options);
 
+  // setup default strip values if in production
+  const strip = setupStrip(options);
+
   // get the tsconfig options for this build
   let ts = options.tsconfig || {};
   if (isUndefined(ts?.jsonPath)) {
@@ -140,12 +146,13 @@ export function createRollupConfig(options: CreateRollupConfig): object {
     plugins: [
       styles,
       inject,
-      (json as any)(),
-      (typescript as any)(tsconfig),
+      json(),
+      typescript(tsconfig),
       replace,
       commonjs,
       resolve,
-      (options.minify ? (uglify as any)() : null),
+      strip,
+      (options.minify ? uglify() : null),
     ],
   };
 }

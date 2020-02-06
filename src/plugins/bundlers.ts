@@ -37,13 +37,13 @@ export function configureBundlers({
   }
 
   return {
-    resolve: (resolve as any)({
+    resolve: resolve({
       rootDir,
       mainFields,
       dedupe,
       preferBuiltins,
     }),
-    commonjs: (commonjs as any)({
+    commonjs: commonjs({
       sourceMap: !isProduction,
       namedExports: {
         ...discoveredExports,

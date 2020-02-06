@@ -37,5 +37,5 @@ export function setupPostCSS({ styles, minify }: CreateRollupConfig): null | Plu
   Object.assign(config, styles);
 
   // return configured plugin
-  return (postcss as any)(config);
+  return postcss(config);
 }

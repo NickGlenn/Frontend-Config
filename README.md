@@ -170,3 +170,26 @@ Provide configuration overrides for Typescript. _By default, this will load valu
 
 > **Note:** This preset uses the field name `jsonFile` for configuring the `tsconfig.json` filepath, instead of `tsconfig`. This means you can change the `tsconfig.json` filepath using `tsconfig: { jsonFile: "path/to/tsconfig.json" }`.
 
+### minify
+
+`boolean`
+
+When set to `true`, the bundles will be uglified/minified. If nothing is provided, this will be set to `true` if your `NODE_ENV` is equal to `"production"`.
+
+### styles
+
+Configures the [postcss](https://www.npmjs.com/package/rollup-plugin-postcss) plugin that is used for creating matching CSS bundles for each JS output. In addition to the normal parameters, you can also configure the [autoprefixer](https://www.npmjs.com/package/autoprefixer) PostCSS plugin, provided you don't pass in a custom `plugins` array.
+
+#### Example
+
+```ts
+styles: {
+  extract: false,
+  autoprefix: {
+    cascade: false,
+    ignoreUnknownVersions: true,
+  },
+}
+```
+
+### TBD
