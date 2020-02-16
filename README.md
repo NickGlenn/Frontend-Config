@@ -205,21 +205,9 @@ var someValue = "bar";
 
 When set to `true`, the bundles will be uglified/minified. If nothing is provided, this will be set to `true` if your `NODE_ENV` is equal to `"production"`.
 
-### styles
+### autoprefixCSS
 
-Configures the [postcss](https://www.npmjs.com/package/rollup-plugin-postcss) plugin that is used for creating matching CSS bundles for each JS output. In addition to the normal parameters, you can also configure the [autoprefixer](https://www.npmjs.com/package/autoprefixer) PostCSS plugin, provided you don't pass in a custom `plugins` array.
-
-#### Example
-
-```ts
-styles: {
-  extract: false,
-  autoprefix: {
-    cascade: false,
-    ignoreUnknownVersions: true,
-  },
-}
-```
+Configure the [autoprefixer](https://www.npmjs.com/package/autoprefixer) PostCSS plugin and passes it the [`styles`](#styles) plugin configuration. Pass `null` if you don't wish to use automatic vendor prefixing.
 
 ### plugins
 
