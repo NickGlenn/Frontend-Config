@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
+  "license": "MIT",
   "author": {
     "name": "Nick Glenn",
     "url": "https://nick-glenn.com",
@@ -12,9 +13,17 @@
   "bin": {
     "ng-frontend-init": "dist/init.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NickGlenn/Frontend-Config.git"
+  },
   "scripts": {
-    "preversion": "npm run build && npm run lint",
-    "build": "rm -rf dist && tsc -p . && chmod +x dist/init.js",
+    "preversion": "npm-run-all -s pull lint clean build chmod",
+    "postversion": "git push --follow-tags",
+    "clean": "rimraf dist",
+    "build": "tsc -p .",
+    "chmod": "chmod +x dist/init.js",
+    "pull": "git pull",
     "lint": "tslint -p ."
   },
   "jest": {
@@ -38,6 +47,7 @@
     ]
   },
   "dependencies": {
+    "@rollup/plugin-alias": "^3.0.1",
     "@rollup/plugin-commonjs": "^11.0.1",
     "@rollup/plugin-json": "^4.0.1",
     "@rollup/plugin-node-resolve": "^7.0.0",
@@ -45,10 +55,12 @@
     "@rollup/plugin-strip": "^1.3.2",
     "@rollup/plugin-typescript": "^3.0.0",
     "autoprefixer": "^9.7.4",
+    "deepmerge": "^4.2.2",
     "dotenv": "^8.2.0",
     "inquirer": "^7.0.4",
     "rollup": "^1.30.1",
     "rollup-plugin-postcss": "^2.0.6",
+    "rollup-plugin-typescript": "^1.0.1",
     "rollup-plugin-uglify": "^6.0.4",
     "tslib": "^1.10.0",
     "tslint": "^6.0.0",
@@ -63,6 +75,8 @@
     "@types/node": "^13.5.1",
     "@types/rollup-plugin-postcss": "^2.0.0",
     "jest": "^25.1.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
     "ts-jest": "^25.0.0"
   }
 }

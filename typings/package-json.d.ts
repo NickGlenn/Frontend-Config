@@ -1,6 +1,6 @@
 type PackageJSON = {
 
-  name: string;
+  name?: string;
 
   version?: string;
 

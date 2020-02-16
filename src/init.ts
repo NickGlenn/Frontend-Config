@@ -305,7 +305,7 @@ module.exports = config({
           strictNullChecks: true,
           noImplicitReturns: true,
           outDir: answers.distFolder,
-          declaration: answers.projectType === "Library",
+          declaration: answers.projectType === "library",
           ...additionalTsOptions,
           lib: [
             "dom",

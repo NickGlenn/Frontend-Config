@@ -13,3 +13,7 @@ type PrimitiveList = (Primitive | PrimitiveMap | PrimitiveList)[];
 type PrimitiveMap = {
   [key: string]: Primitive | PrimitiveList | PrimitiveMap;
 };
+
+type NullableMap<T> = {
+  [key in keyof T]: null | T[key];
+};

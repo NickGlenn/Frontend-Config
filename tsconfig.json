@@ -20,10 +20,7 @@
   },
   "include": [
     "./src/**/*.ts",
-    "typings/package-json.d.ts",
-    "typings/generics.d.ts",
-    "typings/rollup-plugin-strip.d.ts",
-    "typings/rollup-plugin-uglify.d.ts"
+    "typings/*.d.ts"
   ],
   "exclude": [
     "node_modules"

@@ -5,10 +5,11 @@ This library is a simple preset for quickly setting up a build pipeline using [R
 > This is an opinionated preset! If you are looking for deeper customization than what's provided here, you may want to consider a different solution or a fully custom build pipeline.
 
 - Provides loaders for importing JSON, CSS, SASS/SCSS, and PostCSS with autoprefixing for cross-browser support
+- Includes support for `.env` files
 - Handles injection of environment variables directly into your build
 - Minifies CSS and JS code for production
-- Manages CommonJS configurations with support for popular libraries that don't support ESM (like React and React DOM)
 - Built in wizard for generating a custom build pipeline for your project
+- Automatic configuration support for popular libraries (like [React](#react-support) and [Preact](#preact-support))
 
 ## Usage
 
@@ -41,9 +42,9 @@ module.exports = config({
 });
 ```
 
-## Configuration Options
+## Base Configuration
 
-This config function provided by this library will generate a full Rollup build configuration for you. The only required fields are `input` and `output`.
+This config function provided by this library will generate a full Rollup build configuration for you. The only required fields are `input` and `output`. All [Rollup options](https://rollupjs.org/guide/en/#big-list-of-options) are available to you, with exception of [plugins](#plugins) which are handled differently.
 
 ### input
 
@@ -59,11 +60,13 @@ See https://rollupjs.org/guide/en/#output
 
 See https://rollupjs.org/guide/en/#external
 
+> If `isLibrary` is set to `true`, the `external` array will automatically be filled in using the names of all the packages found in the `"dependencies"` map.
+
 ### dotenv
 
-`boolean | DotenvConfigOptions`
+`null | DotenvConfigOptions`
 
-Unless explicitly set to `false`, the [dotenv](https://www.npmjs.com/package/dotenv) library will be initialized using the provided (or default) settings. This allows for developers to maintain a local `.env` file with environment variables that will be made available to the build process.
+Unless explicitly set to `null`, the [dotenv](https://www.npmjs.com/package/dotenv) library will be initialized using the provided (or default) settings. This allows for developers to maintain a local `.env` file with environment variables that will be made available to the build process.
 
 See options for [`DotenvConfigOptions`](https://www.npmjs.com/package/dotenv#options)
 
@@ -77,7 +80,9 @@ Determines whether or not this is a "production" build. By default, this will be
 
 `boolean`
 
-Allows the configuration script to inspect your `package.json` and make some configuration decisions on your behalf. For example, if `react` and/or `react-dom` are installed it will automatically set the `namedExports` values required to build these libraries. _Defaults to `true`._
+Allows the configuration script to inspect your `package.json` and make some configuration decisions on your behalf. _Defaults to `true`._
+
+See the [Automatic Configuration](#automatic-configuration) section below for more information
 
 ### missingExports
 
@@ -108,10 +113,6 @@ You can resolve this quickly by passing the following option:
 ```ts
 missingExports: ["@material-ui/utils"],
 ```
-
-### namedExports
-
-See https://www.npmjs.com/package/@rollup/plugin-commonjs#namedexports
 
 ### isLibrary
 
@@ -151,7 +152,15 @@ var foo = {"bar": "baz"};
 
 ### injectVersion
 
-Automatically injects a `BUILD_VERSION` variable into your build using the `version` property found in the [`package.json`](#packageJson) file. _Defaults to `true.`_
+Automatically injects a variable into your build using the `version` property found in the [`package.json`](#packageJson) file. _Defaults to `BUILD_VERSION.`_
+
+```ts
+injectVersion: "APP_VERSION"
+
+// compiled.js
+
+var APP_VERSION = "x.x.x";
+```
 
 ### exposeEnv
 
@@ -167,26 +176,18 @@ The following configuration example would allow you to use `process.env.NODE_ENV
 exposeEnv: ["NODE_ENV"]
 ```
 
-### replaceRaw
-
-`RollupReplaceOptions`
-
-Replaces compiled code using [Rollup's replace plugin](https://www.npmjs.com/package/@rollup/plugin-replace). See the documentation for a full [list of available options](https://www.npmjs.com/package/@rollup/plugin-replace#options) and usage.
-
-> **Recommendation:** In most cases you should use [`replaceSafe`](#replaceSafe) instead.
-
-### replaceSafe
+### replace
 
 `{ [key: string]: null | boolean | number | string }`
 
-Replace compiled code that matches the `string` key in the object. This option operates the same way as `replaceRaw`, but will apply `JSON.stringify()` to each value in the map.
+Replace compiled code that matches the `string` key in the object using [Rollup's replace plugin](https://www.npmjs.com/package/@rollup/plugin-replace). This option will apply `JSON.stringify()` to each value in the map, making it a more streamlined alternative to configuring the replace plugin yourself.
 
 #### Example
 
-For example, you could replace every instance of a placeholder value like `__FOO__` with a `string` literal, like `"bar"`.
+You could easily replace every instance of a placeholder value like `__FOO__` with a `string` literal, like `"bar"`.
 
 ```ts
-replaceSafe: { __FOO__: "bar" }
+replace: { __FOO__: "bar" }
 
 // someFile.ts (source)
 
@@ -197,12 +198,6 @@ var someValue = __FOO__;
 
 var someValue = "bar";
 ```
-
-### tsconfig
-
-Provide configuration overrides for Typescript. _By default, this will load values from your project's `tsconfig.json` file._ See the plugin's [documentation for options](https://www.npmjs.com/package/@rollup/plugin-typescript#options) and usage details.
-
-> **Note:** This preset uses the field name `jsonFile` for configuring the `tsconfig.json` filepath, instead of `tsconfig`. This means you can change the `tsconfig.json` filepath using `tsconfig: { jsonFile: "path/to/tsconfig.json" }`.
 
 ### minify
 
@@ -226,4 +221,63 @@ styles: {
 }
 ```
 
-### TBD
+### plugins
+
+See [Plugin Configuration](#plugin-configuration)
+
+## Plugin Configuration
+
+This preset includes a number of popular Rollup plugins and sets up a base configuration for each depending on your other settings. You can customize or override the plugins using either a plugin configuration object or a configuration function.
+
+### Using an config object
+
+If you do not wish to change the order of the plugins or add any new plugins to the mix, you can use a configuration object. Each key in the object corresponds to a plugin, and the value is the option argument that is passed to that plugin.  The following table lists all of the fields available in the map and the plugin that they correlate to.
+
+> **Note:** You can disabled _any_ plugin from being added by providing `null` as the value.
+
+| Field | Plugin | Description |
+| ------|--------|-------------|
+| `styles` | [rollup-plugin-postcss](https://www.npmjs.com/package/rollup-plugin-postcss) | Handles importing of CSS, SCSS, and LESS files while also applying PostCSS plugins. |
+| `inject` | | Internally generated plugin for injecting values. See [inject](#inject) |
+| `json` | [@rollup/plugin-json](https://www.npmjs.com/package/@rollup/plugin-json) |  Allows importing of JSON files. |
+| `typescript` | [rollup-plugin-typescript](https://www.npmjs.com/package/rollup-plugin-postcss) | Compiles Typescript files. Currently using the legacy plugin due to issues with `@rollup/plugin-typescript`. |
+| `replace` | [@rollup/plugin-replace](https://www.npmjs.com/package/@rollup/plugin-replace) | Replaces values in your files at build time. Required for [`replace`](#replace) and [`exposeEnv`](#exposeEnv). |
+| `commonjs` | [@rollup/plugin-commonjs](https://www.npmjs.com/package/@rollup/plugin-commonjs) | Handles importing of CommonJS packages as ES modules. A _must have_ for most projects. Required for [`missingExports`](#missingExports). |
+| `alias` | [@rollup/plugin-alias](https://www.npmjs.com/package/@rollup/plugin-alias) | Used to alias module imports to other module names or filepaths. |
+| `resolve` | [@rollup/plugin-node-resolve](https://www.npmjs.com/package/@rollup/plugin-node-resolve) | Handles resolution of packages installed using a NPM or similar. Another _must have_ for most projects. |
+| `strip` | [@rollup/plugin-strip](https://www.npmjs.com/package/@rollup/plugin-strips) | Used to optimize builds by stripping out debug statements. |
+| `uglify` | [rollup-plugin-uglify](https://www.npmjs.com/package/rollup-plugin-uglify) | Minifies and compresses the resulting JS modules for a build. Required for [`minify`](#minify). |
+
+### Using a config function
+
+`(plugins: PluginFunctionMap) => Plugin[]`
+
+For users wishing to alter the plugin setup with greater control, you can use a function that accepts the current configuration created by the preset along with some helper methods for constructing each plugin.
+
+```tsx
+import config from "@nickglenn/frontend-config";
+import somePlugin from "some-other-plugin";
+
+module.exports = config({
+  plugins: ({ inject, typescript, uglify }) => ([
+    inject({
+      foo: "bar",
+    }),
+    typescript(),
+    somePlugin(),
+    uglify({}),
+  ]),
+});
+```
+
+## Automatic Configurations
+
+When [`allowAutoConfig`](#allowAutoConfig) is enabled, this preset will scan your `package.json` file for whatever dependencies you have installed and can make configurations on your behalf for certain libraries and frameworks.
+
+### React Support
+
+Due to how React is written, it does not comply with Rollup's ES module requirement and requires some additional set up using Rollup's CommonJS plugin. Rather than having to deal with this manually, this preset will construct the [`missingExports`](#missingExports) option for you, adding `"react"`, `"react-dom"`, `"react-is"`, and `"prop-types"` to the list.
+
+### Preact Support
+
+Unlike React, Preact plays extremely well with Typescript and Rollup with no additional configuration. However, to use React libraries with Preact, you need to use Preact's `"preact/compat"` module. This preset handles that configuration for you, by aliasing `"react"` and `"react-dom"` to the aforementioned `"preact/compat"` library.
