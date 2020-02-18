@@ -13,6 +13,9 @@ import { isUndefined } from "./utils";
 import { DotenvConfigOptions } from "dotenv/types";
 import { Options as AutoprefixerOptions } from "autoprefixer";
 import * as autoprefixer from "autoprefixer";
+import { RollupStripPlugin } from "@rollup/plugin-strip";
+import { PackageJSON } from "./package-json";
+import { NullableMap, Primitive, PrimitiveMap, StringMap, TMap } from "./generics";
 
 const postcss = require("rollup-plugin-postcss");
 const json = require("@rollup/plugin-json");

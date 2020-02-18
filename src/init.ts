@@ -5,6 +5,8 @@ import { exec } from "child_process";
 import { join } from "path";
 import { existsSync, writeFileSync } from "fs";
 import * as inquirer from "inquirer";
+import { PackageJSON } from "./package-json";
+import { StringMap } from "./generics";
 
 const thisPkg = require("../package.json");
 const cwd = process.cwd();

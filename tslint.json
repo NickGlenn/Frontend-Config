@@ -19,7 +19,6 @@
       "never"
     ],
     "jsx-no-multiline-js": false,
-    "completed-docs": true,
     "adjacent-overload-signatures": true,
     "array-type": [
       true,
