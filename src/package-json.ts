@@ -70,14 +70,14 @@ export namespace PackageJSON {
     name: string;
     email?: string;
     homepage?: string;
-  }
+  };
 
   /**
    * A map of exposed bin commands
    */
   export type BinMap = {
     [commandName: string]: string;
-  }
+  };
 
   /**
    * A bugs link
@@ -85,19 +85,19 @@ export namespace PackageJSON {
   export type Bugs = {
     email: string;
     url: string;
-  }
+  };
 
   export type Config = {
     name?: string;
     config?: Object;
-  }
+  };
 
   /**
    * A map of dependencies
    */
   export type DependencyMap = {
     [dependencyName: string]: string;
-  }
+  };
 
   /**
    * CommonJS package structure
@@ -108,16 +108,16 @@ export namespace PackageJSON {
     man?: string;
     doc?: string;
     example?: string;
-  }
+  };
 
   export type Engines = {
     node?: string;
     npm?: string;
-  }
+  };
 
   export type PublishConfig = {
     registry?: string;
-  }
+  };
 
   /**
    * A project repository
@@ -125,10 +125,10 @@ export namespace PackageJSON {
   export type Repository = {
     type: string;
     url: string;
-  }
+  };
 
   export type ScriptsMap = {
     [scriptName: string]: string;
-  }
+  };
 
 }
