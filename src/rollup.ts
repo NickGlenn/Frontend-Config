@@ -16,7 +16,7 @@ import * as autoprefixer from "autoprefixer";
 
 const postcss = require("rollup-plugin-postcss");
 const json = require("@rollup/plugin-json");
-const typescript = require("rollup-plugin-typescript");
+const typescript = require("@rollup/plugin-typescript");
 const replace = require("@rollup/plugin-replace");
 const commonjs = require("@rollup/plugin-commonjs");
 const alias = require("@rollup/plugin-alias");
