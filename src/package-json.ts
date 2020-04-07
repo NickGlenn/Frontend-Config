@@ -1,4 +1,4 @@
-type PackageJSON = {
+export type PackageJSON = {
 
   name?: string;
 
@@ -61,74 +61,74 @@ type PackageJSON = {
   jest?: object;
 };
 
-declare namespace PackageJSON {
+export namespace PackageJSON {
 
   /**
    * An author or contributor
    */
-  type Author = {
+  export type Author = {
     name: string;
     email?: string;
     homepage?: string;
-  }
+  };
 
   /**
    * A map of exposed bin commands
    */
-  type BinMap = {
+  export type BinMap = {
     [commandName: string]: string;
-  }
+  };
 
   /**
    * A bugs link
    */
-  type Bugs = {
+  export type Bugs = {
     email: string;
     url: string;
-  }
+  };
 
-  type Config = {
+  export type Config = {
     name?: string;
     config?: Object;
-  }
+  };
 
   /**
    * A map of dependencies
    */
-  type DependencyMap = {
+  export type DependencyMap = {
     [dependencyName: string]: string;
-  }
+  };
 
   /**
    * CommonJS package structure
    */
-  type Directories = {
+  export type Directories = {
     lib?: string;
     bin?: string;
     man?: string;
     doc?: string;
     example?: string;
-  }
+  };
 
-  type Engines = {
+  export type Engines = {
     node?: string;
     npm?: string;
-  }
+  };
 
-  type PublishConfig = {
+  export type PublishConfig = {
     registry?: string;
-  }
+  };
 
   /**
    * A project repository
    */
-  type Repository = {
+  export type Repository = {
     type: string;
     url: string;
-  }
+  };
 
-  type ScriptsMap = {
+  export type ScriptsMap = {
     [scriptName: string]: string;
-  }
+  };
 
 }
