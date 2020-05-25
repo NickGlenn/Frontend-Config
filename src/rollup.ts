@@ -26,6 +26,8 @@ const alias = require("@rollup/plugin-alias");
 const resolve = require("@rollup/plugin-node-resolve");
 const strip = require("@rollup/plugin-strip");
 const { uglify } = require("rollup-plugin-uglify");
+const builtins = require("rollup-plugin-node-builtins");
+const globals = require("rollup-plugin-node-globals");
 
 export const ESM_NOT_SUPPORTED = [
   "react-dom",
@@ -103,6 +105,8 @@ export type PresetOptions = {
   forceInclude: string[];
   /** Configure plugins using a map or function. */
   plugins: Partial<NullableMap<PluginConfigMap>> | PluginConfigFunction;
+  /** Adds the builtins and globals plugins to shim missing NodeJS provided libraries. */
+  useBuiltins: boolean;
 };
 
 export type PluginConfigMap = {
@@ -168,6 +172,7 @@ export function createRollupConfig(options: CreateRollupConfig): object {
     autoprefixCSS,
     forceInclude = [],
     plugins,
+    useBuiltins = true,
     ...rollupConfig } = options;
 
   // create the function for building the plugins
@@ -273,10 +278,15 @@ export function createRollupConfig(options: CreateRollupConfig): object {
     inject: buildInject(inject),
   };
 
+  let finalPlugins = _buildPlugins(pluginFunctions);
+  if (useBuiltins) {
+    finalPlugins.push(globals(), builtins());
+  }
+
   // all done!
   return {
     ...rollupConfig,
-    plugins: _buildPlugins(pluginFunctions),
+    plugins: finalPlugins,
   };
 }
 

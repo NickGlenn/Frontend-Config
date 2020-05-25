@@ -209,6 +209,12 @@ When set to `true`, the bundles will be uglified/minified. If nothing is provide
 
 Configure the [autoprefixer](https://www.npmjs.com/package/autoprefixer) PostCSS plugin and passes it the [`styles`](#styles) plugin configuration. Pass `null` if you don't wish to use automatic vendor prefixing.
 
+### useBuiltins
+
+`boolean`
+
+Automatically appends the [rollup-plugin-node-builtins](https://www.npmjs.com/package/rollup-plugin-node-builtins) and [rollup-plugin-node-globals](https://www.npmjs.com/package/rollup-plugin-node-globals) plugins to the end of the plugins list. This allows NodeJS provided libraries to be used by your front-end code. In some cases, the builtins are just a mock as there's not always a browser capable equivalent.
+
 ### plugins
 
 See [Plugin Configuration](#plugin-configuration)
